@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: hibernate-demo-config
+  name: order-service-config
 data:
   SPRING_PROFILES_ACTIVE: "kubernetes"
   APP_JWT_SECRET: "dGhpc0lzQVZlcnlMb25nU2VjcmV0S2V5VGhhdElzQXRMZWFzdDI1NkJpdHNMb25n"

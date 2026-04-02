@@ -1,9 +1,9 @@
 spring:
   application:
-    name: hibernate-demo
+    name: order-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/hibernate_demo
+    url: jdbc:postgresql://localhost:5432/order_db
     username: demo_user
     password: demo_password
     driver-class-name: org.postgresql.Driver
@@ -60,7 +60,7 @@ resilience4j:
 logging:
   level:
     root: INFO
-    com.example.hibernatedemo: DEBUG
+    com.example.orderservice: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
@@ -73,9 +73,11 @@ app:
   service:
     timeout: 5000
     inventory:
-      base-url: http://inventory-service:8081
+      base-url: http://localhost:8081
     shipping:
-      base-url: http://shipping-service:8082
+      base-url: http://localhost:8082
+    auth:
+      base-url: http://localhost:8083
 
 server:
   port: 8080

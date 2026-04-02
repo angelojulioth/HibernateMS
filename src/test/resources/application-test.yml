@@ -21,4 +21,4 @@ app:
 
 logging:
   level:
-    com.example.hibernatedemo: DEBUG
+    com.example.orderservice: DEBUG

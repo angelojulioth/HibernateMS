@@ -26,7 +26,7 @@ Una guía para principiantes que explica cada componente de este proyecto.
 
 ```
 src/
-├── main/java/com/example/hibernatedemo/
+├── main/java/com/example/orderservice/
 │   ├── domain/
 │   │   ├── entity/           # Entidades JPA (Order, Product, AppUser)
 │   │   └── enums/            # Enumeraciones (OrderStatus, Role)
@@ -49,8 +49,8 @@ src/
 │   ├── interfaces/
 │   │   ├── controller/       # Controladores REST (usan Mediador)
 │   │   └── exception/        # Manejador global ProblemDetail
-│   └── HibernateDemoApplication.java
-├── test/java/com/example/hibernatedemo/integration/
+│   └── orderserviceApplication.java
+├── test/java/com/example/orderservice/integration/
 │   ├── OrderControllerIntegrationTest.java
 │   ├── ProductControllerIntegrationTest.java
 │   ├── EventDispatchIntegrationTest.java
@@ -142,7 +142,7 @@ Docker Compose te permite definir y ejecutar aplicaciones multi-contenedor con u
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: hibernate-demo-db
+    container_name: order-service-db
     environment:
       POSTGRES_DB: hibernate_demo
       POSTGRES_USER: demo_user
@@ -163,7 +163,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hibernate-demo-app
+    container_name: order-service-app
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hibernate_demo
@@ -180,7 +180,7 @@ services:
 
   zipkin:
     image: openzipkin/zipkin:latest
-    container_name: hibernate-demo-zipkin
+    container_name: order-service-zipkin
     ports:
       - "9411:9411"
     networks:
@@ -188,7 +188,7 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: hibernate-demo-prometheus
+    container_name: order-service-prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -888,7 +888,7 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: hibernate-demo-config
+  name: order-service-config
 data:
   SPRING_PROFILES_ACTIVE: "kubernetes"
   APP_JWT_SECRET: "..."
@@ -900,7 +900,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: hibernate-demo-secrets
+  name: order-service-secrets
 type: Opaque
 stringData:
   SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/hibernate_demo"
@@ -913,7 +913,7 @@ stringData:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hibernate-demo
+  name: order-service
 spec:
   replicas: 2                          # 2 instancias
   strategy:
@@ -924,8 +924,8 @@ spec:
   template:
     spec:
       containers:
-        - name: hibernate-demo
-          image: hibernate-demo:latest
+        - name: order-service
+          image: order-service:latest
           readinessProbe:              # ¿Listo para tráfico?
             httpGet:
               path: /actuator/health/readiness
@@ -948,10 +948,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: hibernate-demo
+  name: order-service
 spec:
   selector:
-    app: hibernate-demo
+    app: order-service
   ports:
     - name: http
       port: 80
@@ -1003,10 +1003,10 @@ kubectl apply -f k8s/
 kubectl get pods
 
 # Ver logs
-kubectl logs -f deployment/hibernate-demo
+kubectl logs -f deployment/order-service
 
 # Escalar manualmente
-kubectl scale deployment hibernate-demo --replicas=5
+kubectl scale deployment order-service --replicas=5
 
 # Eliminar todo
 kubectl delete -f k8s/
@@ -1437,7 +1437,7 @@ docker compose up --build
 ```bash
 # Construir imagen Docker
 mvn clean package
-docker build -t hibernate-demo:latest .
+docker build -t order-service:latest .
 
 # Aplicar configuración de Kubernetes
 kubectl apply -f k8s/
@@ -1447,7 +1447,7 @@ kubectl get pods
 kubectl get services
 
 # Acceder a la API (port-forward)
-kubectl port-forward service/hibernate-demo 8080:80
+kubectl port-forward service/order-service 8080:80
 ```
 
 ### Endpoints de Monitoreo

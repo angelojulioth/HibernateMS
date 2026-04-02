@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>hibernate-demo</artifactId>
+    <artifactId>order-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>hibernate-demo</name>
-    <description>Spring Boot Clean Architecture Demo with Hibernate</description>
+    <name>order-service</name>
+    <description>Order Management Microservice</description>
 
     <properties>
         <java.version>17</java.version>

@@ -1,0 +1,4 @@
+package com.example.orderservice.application.mediator;
+
+public interface Command<R> {
+}

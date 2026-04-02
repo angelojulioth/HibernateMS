@@ -1,34 +1,36 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: hibernate-demo-db
+    container_name: order-service-db
     environment:
-      POSTGRES_DB: hibernate_demo
+      POSTGRES_DB: order_db
       POSTGRES_USER: demo_user
       POSTGRES_PASSWORD: demo_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U demo_user -d hibernate_demo"]
+      test: ["CMD-SHELL", "pg_isready -U demo_user -d order_db"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - app-network
 
-  app:
+  order-service:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hibernate-demo-app
+    container_name: order-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hibernate_demo
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/order_db
       SPRING_DATASOURCE_USERNAME: demo_user
       SPRING_DATASOURCE_PASSWORD: demo_password
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      APP_SERVICE_AUTH_BASE_URL: http://auth-service:8083
     ports:
       - "8080:8080"
     depends_on:
@@ -37,9 +39,63 @@ services:
     networks:
       - app-network
 
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: demo_user
+      SPRING_DATASOURCE_PASSWORD: demo_password
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  shipping-service:
+    build:
+      context: ./shipping-service
+      dockerfile: Dockerfile
+    container_name: shipping-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shipping_db
+      SPRING_DATASOURCE_USERNAME: demo_user
+      SPRING_DATASOURCE_PASSWORD: demo_password
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: demo_user
+      SPRING_DATASOURCE_PASSWORD: demo_password
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
   zipkin:
     image: openzipkin/zipkin:latest
-    container_name: hibernate-demo-zipkin
+    container_name: order-service-zipkin
     ports:
       - "9411:9411"
     networks:
@@ -47,7 +103,7 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: hibernate-demo-prometheus
+    container_name: order-service-prometheus
     ports:
       - "9090:9090"
     volumes:

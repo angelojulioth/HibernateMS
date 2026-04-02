@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hibernate-demo
+  name: order-service
   labels:
-    app: hibernate-demo
+    app: order-service
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: hibernate-demo
+      app: order-service
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -17,11 +17,11 @@ spec:
   template:
     metadata:
       labels:
-        app: hibernate-demo
+        app: order-service
     spec:
       containers:
-        - name: hibernate-demo
-          image: hibernate-demo:latest
+        - name: order-service
+          image: order-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -29,9 +29,9 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: hibernate-demo-config
+                name: order-service-config
             - secretRef:
-                name: hibernate-demo-secrets
+                name: order-service-secrets
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
